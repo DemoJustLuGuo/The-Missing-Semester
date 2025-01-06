@@ -15,8 +15,10 @@
 在运行 ls -l 命令时 powershell 突然报错：
 
 > Get-ChildItem: Missing an argument for parameter 'LiteralPath'. Specify a parameter of type 'System.String[]' and try again.
-> 百度后发现错误是因为 Powershell 使用-LiteralPath，因为该选项与-l 匹配，但它需要一个参数。（这里应该是 windows 与 linux 命令使用的差异导致的）
-> 查阅命令帮助后发现 powershell 可直接使用 ls 或 dir、gci 等命令列出文件目录
+
+百度后发现错误是因为 Powershell 使用-LiteralPath，因为该选项与-l 匹配，但它需要一个参数。（这里应该是 windows 与 linux 命令使用的差异导致的）
+查阅命令帮助后发现 powershell 可直接使用 ls 或 dir、gci 等命令列出文件目录
+
 > 或者使用 ls -Path 'C:\Users\YourUsername\Documents'
 
 在此之前使用查看环境变量 echo $PATH命令也遇到了同样的问题，不过在经过弹幕提醒后知道了windows的powershell使用的是$env:path 命令
