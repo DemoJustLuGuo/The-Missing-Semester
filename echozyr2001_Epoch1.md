@@ -205,3 +205,311 @@ source /Users/echo/.docker/init-zsh.sh || true # Added by Docker Desktop
 `tee` 命令感觉很实用，有时间可以深入了解一下。
 
 ### 01.07
+
+> 学习时间：60 min
+
+---
+
+**大多数 shell 都有自己的一套脚本语言，包括变量、控制流和自己的语法。**
+
+据我所知，特别是 fish 的脚本语言与 bash 有很大不同。我们在写脚本时添加 `#!/bin/sh` 就能消除由于使用的 shell 不同导致脚本无法通用的问题。
+
+---
+
+高级 Bash 脚本编写指南：https://tldp.org/LDP/abs/html/special-chars.html
+
+> `$0` - 脚本名
+> 
+> `$1` 到 $9 - 脚本的参数。 $1 是第一个参数，依此类推。
+> 
+> `$@` - 所有参数
+> 
+> `$#` - 参数个数
+> 
+> `$?` - 前一个命令的返回值
+> 
+> `$$` - 当前脚本的进程识别码
+> 
+> `!!` - 完整的上一条命令，包括参数。常见应用：当你因为权限不足执行命令失败时，可以使用 sudo !! 再尝试一次。
+>
+> `$_` - 上一条命令的最后一个参数。如果你正在使用的是交互式 shell，你可以通过按下 Esc 之后键入 . 来获取这个值。
+
+---
+
+tldr 命令：比 man 更简短的手册查询
+
+---
+
+||：“逻辑或” 操作，只有当左侧命令失败（退出状态码非 0）时，才会执行右侧命令。（两条命令中至少执行一个？）
+
+&&：“逻辑与” 操作，只有当左侧命令成功（退出码为 0）时，才会执行右侧命令。（两台命令都要执行？）
+
+---
+
+<(CMD) 的作用是将命令 CMD 的输出提供给需要文件名作为输入的程序，而不是直接通过管道 | 传递数据。
+
+> 没用过，抽时间熟悉
+
+---
+
+使用 `?` 和 `*` 来匹配一个或任意个字符。`*` 通配符知道，但是使用 `?` 匹配单个字符还是第一次了解。
+
+`{}` 当命令中有公共子串时，可以用来简化命令。例如：
+
+```bash
+convert image.{png,jpg}
+# 会展开为
+convert image.png image.jpg
+
+cp /path/to/project/{foo,bar,baz}.sh /newpath
+# 会展开为
+cp /path/to/project/foo.sh /path/to/project/bar.sh /path/to/project/baz.sh /newpath
+```
+
+---
+
+`env` 命令，用于显示系统中存在的所有环境变量，用在 `shebang` 中可以增加脚本的通用性。
+
+就拿 Python 来说，毕竟不是所有人都会讲它安装在相同的目录中，`#!/usr/bin/env python` 就能解决这个问题。
+
+---
+
+shellcheck 强大的 sh 脚本检查器
+
+```
+#!/bin/bash
+
+# 检查PID文件是否存在
+if [ ! -f zkrock.pid ]; then
+  echo "PID file not found. Is zkrock running?"
+  exit 1
+fi
+
+# 读取PID
+PID=$(cat zkrock.pid)
+
+# 停止进程
+kill $PID
+
+# 等待进程结束
+sleep 1
+
+# 检查进程是否成功停止
+if ps -p $PID > /dev/null; then
+   echo "Failed to stop zkrock. Force stopping..."
+   kill -9 $PID
+fi
+
+# 删除PID文件
+rm zkrock.pid
+
+echo "Zkrock stopped."
+```
+
+检查出来有下面这些可以优化的地方
+
+```
+In stop.sh line 13:
+kill $PID
+     ^--^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean:
+kill "$PID"
+
+
+In stop.sh line 19:
+if ps -p $PID > /dev/null; then
+         ^--^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean:
+if ps -p "$PID" > /dev/null; then
+
+
+In stop.sh line 21:
+   kill -9 $PID
+           ^--^ SC2086 (info): Double quote to prevent globbing and word splitting.
+
+Did you mean:
+   kill -9 "$PID"
+```
+
+---
+
+视频里讲了很多工具，我认为比较重要的是 `fzf` 和 `ripgrep`。有很多实用插件都是基于它们实现的。
+
+---
+
+课后练习暂时不做了
+
+### 01.08
+
+> 学习时间：70 min
+
+---
+
+`sed` 是一个流编辑器，可以用来替换文本中的内容，替换的命令为 `s` : `s/REGEX/SUBSTITUTION/`（这在 vim 中也很常用）
+
+其中 `REGEX` 部分是正则表达式，`SUBSTITUTION` 是用于替换匹配结果的文本。
+
+```bash
+ssh myserver journalctl
+ | grep sshd
+ | grep "Disconnected from"
+ | sed 's/.*Disconnected from //'
+```
+
+---
+
+正则表达式在线调试工具：https://regex101.com/
+
+正则表达式这部分让我想到了之前在学编译原理时还想自己实现一个正则解析器，收藏了很多资料但一直没有开始。等空下来可以去实现来玩玩。
+
+正则表达式在某些情况下会非常复杂，它**是**万能的又**不是**万能的，若你要解析 `json` 等结构，有更好的工具可以使用，不用强求去使用正则。
+
+---
+
+平时的数据处理，我几乎只会使用 `cat` `tail` `grep`
+
+`awk` 编程语言介绍：https://backreference.org/2010/02/10/idiomatic-awk/
+
+推荐一个网站 **Learn x in y minutes（y 分钟学习 x）**：https://learnxinyminutes.com/
+
+---
+
+MLK DAY 马丁·路德·金纪念日 它们居然还会放假
+
+---
+
+数据处理这部分讲了很多工具的使用，没有太多可以记录的东西，主要是了解这些工具，日后遇到一些情况就可以使用它们。
+
+工具一定是越用越熟练的，平时也需要有意识地去使用这些数据处理的工具。就算不用课程中讲到的工具，python、lua 等更现代的脚本语言也是一个很好的选择。
+
+### 01.09
+
+> 学习时间：60 min
+
+---
+
+vscode neovim 插件 https://marketplace.visualstudio.com/items?itemName=asvetliakov.vscode-neovim
+
+一些配置
+
+```json
+{
+  "vscode-neovim.neovimExecutablePaths.linux": "/usr/bin/nvim",
+  "vscode-neovim.neovimInitVimPaths.linux": "$HOME/.config/nvim/init.lua",
+  "vscode-neovim.compositeKeys": {
+    "jk": {
+      "command": "vscode-neovim.lua",
+      "args": [
+        "vim.api.nvim_input('<ESC>')\nrequire('vscode-neovim').action('workbench.action.files.save')"
+      ]
+    }
+  },
+}
+```
+
+---
+
+- 行： 0 （行初）， ^ （第一个非空格字符）， $ （行尾）
+- 屏幕： H （屏幕首行）， M （屏幕中间）， L （屏幕底部）
+
+---
+
+**宏**
+
+`q{字符}` 来开始在寄存器 `{字符}` 中录制宏
+
+`q` 停止录制
+
+`@{字符}` 重放宏
+
+---
+
+因为本身比较熟悉 `vim` 的操作，所以这部分直接快速掠过了，仅记录了一些之前没用过以及觉得比较重要的内容。
+
+然后花了一点时间来配置 `neovim`。（`neovim` 是更现代化的 `vim` 可以使用 `lua` 语言来进行配置）简单做些记录。
+
+`neovim` 目前已经有很多成熟的配置 [Lazyvim](https://www.lazyvim.org/)、[NvChad](https://nvchad.com/)
+
+初次尝试 `neovim` 可以选择其一进行体验，它们的官网中都提供了插件配置的教程，想要切换也非常简单，只需要删除或重命名 `~/.config/nvim` 文件夹，然后换上新的配置即可。
+
+```bash
+➜  ~ ls ~/.config | grep "nvim"
+nvim
+nvim.astron-back
+nvim.lazy-back
+nvim.self-back
+nvim.tar.gz
+```
+
+我计划基于 https://github.com/nvim-lua/kickstart.nvim 进行配置，因为 `Lazyvim` 与 `NvChad` 的配置非常庞大与复杂（在 1c1g 的服务器上甚至能把内存干满），有很多我不需要的功能，一些快捷键也不是我习惯的，并且定制其中一些插件会非常复杂，牵一发而动全身。
+
+`kickstart` 是一个非常精简的 neovim 初始配置。但也不是直接将它克隆下来然后做定制。而是从零开始配置，参考它的文件结构以及配置内容。
+
+这样才能做到在最小的化的安装下尽可能满足自己的要求，日后做修改也非常容易，毕竟配置是自己一个字一个字写的。
+
+### 01.10
+
+> 学习时间：70 min
+
+今天主要是在尝试对 `neovim` 进行配置，花了 20 分钟在 `learnxinyminutes` 上快速过了一遍 `lua` 语言，剩下时间主要在熟悉 `kickstart` 项目。
+
+### 01.11
+
+> 学习时间：70 min
+
+主要在回顾本周内容，也有一些新的想法记录在下面：
+
+---
+
+`tee` 命令可以用来用做两个命令之间的连接。
+
+> Read from `stdin` and write to `stdout` and files (or commands).
+
+---
+
+`foobar` 文化，在你不知道如何命名时通常使用它们，类似中文环境下的小明、小红。
+
+---
+
+常用文件描述符：
+
+* `0` 表示 `stdin`
+* `1` 表示 `stdout`
+* `2` 表示 `stderr`
+* `/dev/null` 表示空文件
+
+`stdout` 和 `stderr` 默认都是将信息输出到终端上，但是它们还是有区别。
+
+```C
+int main(){
+  fprintf(stdout,"Hello ");
+  fprintf(stderr,"World!");
+  return0;
+}
+```
+
+上面这段代码的输出是 `World!Hello `。
+
+在默认情况下，`stdout` 是行缓冲的，他的输出会放在一个 `buffer` 里面，只有到换行的时候，才会输出到屏幕。而 `stderr` 是无缓冲的，会直接输出。
+
+---
+
+在不知道脚本运行文件的位置时，使用 `#!/usr/bin/env <CMD>`
+
+---
+
+**到底什么是 Shell**
+
+shell 直译过来是 “外壳”，它是一种特殊的用户程序，给用户提供了使用操作系统服务的接口。shell 接受用户输入的人类可读的命令，并将其转换为内核可以理解的内容，当用户启动终端时，shell 就会启动。
+
+shell 有两类：命令行 shell（CLI） 和图形 shell（GUI）。
+
+shell 也是一种编程语言，与我们常见的脚本语言 python、lua 类似，它们都有一个交互式编程环境，这个环境叫做 `REPL`（Read-Eval-Print-Loop）。我们使用 shell 其实就是在使用它的 REPL。
+
+---
+
+继续 `neovim` 的配置
+
+### 01.12

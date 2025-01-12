@@ -8,7 +8,7 @@
 
 ## Note
 
-### 12.06
+### 01.06
 
 Learning time: _next day_ `00:00 - 01:00` | `1 hour`
 
@@ -36,4 +36,251 @@ However, here is another command line instruction, from the open source project 
 
 ---
 
-### 12.07
+### 01.07
+
+> Learning Time: About 8 to 9 hours
+>
+> > 大部分时间都去玩 `fzf` 和 `neovim` 的配置了 `=.=`
+
+---
+
+**About `fzf`**
+
+以前一直都是愚蠢的通过方向键上下切换找历史命令，或者通过 history 查询。
+这次学到了 `Ctrl-R`，对于大多数的 shell 来说都是可以使用的，按下后可以输入字串进行匹配，查找历史命令，可以通过方向键精确定位到需要查找的命令，反复敲击相当于翻页吧。
+
+我的 Ubuntu 使用 `sudo apt-get install fzf` 安装的并不是最新的，无法使用 `--bash`、`--zsh`、`--fish` 等选项，这些选项尽在fzf 0.48.0 或更高版本中可用。
+
+我使用的 shell 是 fish，将下行添加到 shell 配置文件中，可以设置 shell 集成
+
+```bash
+fzf --fish | source
+```
+
+可以配置键绑定，只需要在上方那一行中添加对应的参数即可。
+
+比如禁用 `Ctrl-R`，仅需要将参数置空即可
+
+```bash
+fzf --fish | FZF_CTRL_R_OPTS= source
+```
+
+默认情况下是按照相关性排序的。可以通过再按一次 `Ctrl-R` 切换为按时间排序。可以通过添加 `--no-sort` 到 `FZF_CTRL_R_OPTS` 来默认启按时间排序。
+
+同样可以添加下述内容到 `FZF_CTRL_R_OPTS` 产生不同效果：
+
+- `--exact`: 使用精确（非模糊）匹配
+- `--preview 'echo {}' --preview-window up:3:hidden:wrap`: 太长的命令在屏幕上无法完全显示。可以使用 `--preview` 选项在预览窗口上显示完整命令。`--preview-window` 选项是对预览窗口的配置 `up:3:hidden:wrap` 表示预览窗口在主窗口上方，高度为 3 行，且默认隐藏，且文本自动换行。
+- `--bind 'ctrl-/:toggle-preview'`: 绑定 `Ctrl-/` 用于切换预览窗口
+- `--bind 'ctrl-y:execute-silent(echo -n {2..} | tmux load-buffer -)+abort'` 绑定 `Ctrl-y` 用于复制该条命令到剪贴板，这里由于我是 ubuntu，采用的是 tmux 的剪贴板
+- `--color header:italic`: 用于标题显示为斜体
+- `--header 'Press Ctrl-Y to copy command into clipboard'"`: 设定标题
+- `--tmux bottom,40%`: fzf 将在 tmux 弹出窗口中启动，当没有使用 tmux 时，将被忽略。`# --tmux [center|top|bottom|left|right][,SIZE[%]][,SIZE[%][,border-native]]`，其中第一个 size 为宽度，第二个为高度，仅有一个时根据位置不同而不同，比如位于 bottom 时，size 为高度，位于 right 时为宽度。此前提到的 `--preview-window` 的 size 设置同理，那个 3 行可以更换为百分比。
+
+`Ctrl-T` 通常是 Shell 的默认快捷键，用于交换光标前后的字符（例如，将 `abd|def` 变为 `abd|cef`）。
+
+不过在安装 `fzf` 后，`Ctrl-T` 的作用就变成了在当前目录及其子目录中递归搜索文件，并将选中的文件路径插入到命令行中。
+
+也可以对其进行相关配置，类似于上述对 `Ctrl-R` 的配置。
+
+`fzf` 还有其他常用的快捷键：
+
+- `Ctrl-G`：搜索 Git 文件（需要配置 Git 插件）
+- `Alt-C`：搜索目录并切换到选中的目录
+
+我的 `fzf` 在 fish 中是这样配置的：
+
+```bash
+fzf --fish | source
+
+set -gx FZF_CTRL_R_OPTS "
+    --no-sort
+    --bind 'ctrl-y:execute-silent(echo -n {2..} | tmux load-buffer -)+abort'
+    --header 'Press CTRL-Y to copy command into clipboard'
+"
+
+set -gx FZF_DEFAULT_OPTS "
+    --preview 'echo {}'
+    --preview-window up:3:hidden:wrap
+    --bind 'ctrl-/:toggle-preview'
+    --color bg+:#363A4F,bg:#24273A,spinner:#F4DBD6,hl:#ED8796 \
+    --color fg:#CAD3F5,header:#ED8796,info:#C6A0F6,pointer:#F4DBD6 \
+    --color marker:#F4DBD6,fg+:#CAD3F5,prompt:#C6A0F6,hl+:#ED8796 \
+    --color header:italic
+    --header 'Select a file'
+    --prompt 'Search> '
+    --tmux bottom,80%,50%
+    --bind 'alt-1:reload(find . -maxdepth 1)'
+    --bind 'alt-2:reload(find . -maxdepth 2)'
+    --bind 'alt-3:reload(fd)'
+"
+
+set -gx FZF_CTRL_T_OPTS "
+    --preview 'cat {}'
+    --preview-window right:60%:hidden:wrap
+    --tmux bottom,80%,50%
+"
+```
+
+可配置性很高，今天就暂时先玩到这里吧，下次空了我专门写篇文章总结下这些配置吧，很有意思，`fzf` 也很强大。
+
+---
+**Practice**
+
+Q1:
+
+- 所有文件(包括隐藏文件): `ls -a` 或 `ls --all`
+- 文件打印以人类可以理解的格式输出 (例如，使用 454M 而不是 454279954): `ls -h` 或 `ls --human-readable`
+- 文件以最近访问顺序排序: `ls -t` 或 `ls --sort=time`
+- 以彩色文本显示输出结果: `ls --color[=WHEN]` 其中 `WHEN` 可以是 `always`、`yes`、`force`、`never`、`no`、`none`、`auto`、`tty`、`if-tty` 等，也可以省略，省略时是彩色
+
+Q2: 由于我使用的是 fish，因此写法与 bash 有一点不同
+
+```bash
+# marco.fish
+# 定义一个全局变量来保存当前目录
+set -g MARCO_DIR ""
+
+# marco 函数：保存当前工作目录
+function marco
+    set -g MARCO_DIR $(pwd)
+    echo "当前位置已记录: $MARCO_DIR"
+end
+
+# polo 函数：返回到执行 marco 时保存的目录
+function polo
+    if test -z "$MARCO_DIR"
+        echo "未找到记录的位置，请先运行一次 marco 以记录"
+    else
+        cd "$MARCO_DIR" || echo "跳转 $MARCO_DIR 时失败"
+    end
+end
+```
+
+Q3:
+
+```bash
+#!/usr/bin/env bash
+
+# 定义日志文件
+LOGFILE="output.log"
+
+# 清空日志文件
+> "$LOGFILE"
+
+# 计数器，记录运行次数
+COUNT=0
+
+# 循环运行目标脚本，直到它出错
+while true; do
+    # 增加计数器
+    COUNT=$((COUNT + 1))
+
+    # 运行目标脚本，并将标准输出和标准错误流追加到日志文件
+    ./target_script.sh >> "$LOGFILE" 2>&1
+
+    # 检查上一个命令的退出状态
+    if [[ $? -ne 0 ]]; then
+        echo "脚本在第 $COUNT 次运行时失败。"
+        echo "以下是日志文件的内容："
+        cat "$LOGFILE"
+        break
+    fi
+done
+```
+
+其中值得一提的是 `./target_script.sh >> "$LOGFILE" 2>&1` 中的 `2>&1`，其意思是将标准错误流重定向到标准输出流（文件描述符 `1`）的同一位置，而前面的 `>> "$LOGFILE"` 已经将标准输出流重定向到了 `$LOGFILE`，因此通过 `2>&1` 就将标准错误流也重定向到了 `$LOGFILE` 中，如果不使用 `2>&1`，即 `./target_script.sh >> "$LOGFILE"` 那么 `./target_script.sh` 中往标准输出流的内容会被正确的重定向到 `$LOGFILE` 中而标准错误流则会直接输出到终端。
+
+Q4:
+
+通过 `find` 的 `-print0` 将找到的文件名以 `null` 字符（ `\0` ）分隔输出。这是为了正确处理文件名中包含空格或特殊字符的情况。
+
+`xargs` 的 `-d '\0'` 是指定 `null` 字符（ `\0` ）作为分隔符，与 `find -print0` 配合使用。
+
+```bash
+find . -type f -name "*.html" -print0 | xargs -d '\0' zip html_files.zip
+```
+
+或者更简洁的写法将 `-d '\0'` 写为 `-0`，二者等效。
+
+```bash
+find . -type f -name "*.html" -print0 | xargs -0 zip html_files.zip
+```
+
+Q5:
+
+```bash
+#!/usr/bin/env bash
+
+# 用法：./recent_files.sh /path/to/directory [atime|mtime]
+
+DIR="${1:-.}"  # 默认当前目录
+TIME_TYPE="${2:-mtime}"  # 默认按修改时间排序
+
+if [[ "$TIME_TYPE" == "atime" ]]; then
+  FORMAT="%X %n"
+elif [[ "$TIME_TYPE" == "mtime" ]]; then
+  FORMAT="%Y %n"
+else
+  echo "错误：时间类型必须是 'atime' 或 'mtime'"
+  exit 1
+fi
+
+find "$DIR" -type f -exec stat --format="$FORMAT" {} + | sort -nr | cut -d' ' -f2-
+```
+
+其中 `:-` 表示如果前面的变量为空或为设置，则使用后面的值。
+
+`stat` 是一个用于显示文件或文件系统状态的命令行工具。
+
+`--format="格式字符串"` 其中格式字符串为使用 `%` 开头的占位符来指定要显示的字段
+
+以下是一些常用的 `stat` 占位符
+
+| 占位符 | 说明 |
+| :---: | :--- |
+| `%n` | 文件名 |
+| `%s` | 文件大小（字节）  |
+| `%U` | 文件所有者的用户名 |
+| `%G` | 文件所属的用户组 |
+| `%A` | 文件的访问权限（人类可读格式） |
+| `%a` | 文件的访问权限（八进制格式） |
+| `%F` | 文件类型（例如普通文件、目录） |
+| `%X` | 最后访问时间（时间戳） |
+| `%Y` | 最后修改时间（时间戳） |
+| `%Z` | 最后状态变更时间（时间戳） |
+| `%w` | 文件创建时间（时间戳） |
+
+`find "$DIR" -type f -exec stat --format="$FORMAT" {} + | sort -nr | cut -d' ' -f2-` 中的 `+` 的作用为将多个文件一次性传递给 `stat`，而不是每次传递一个文件（比 `\;` 更高效）
+
+`sort -nr` 中 `-n` 表示按数值排序（因为时间戳是数字），`-r` 表示按逆序排序（从小到大，即最新的文件在前）
+
+`cut -d' ' -f2-` 中 `-d' '` 表示指定字段分隔符为空格，`-f2-` 表示提取从第 2 个字段开始的所有内容（即去掉时间戳，只保留文件名）
+
+`cut` 是一个用于从文本行中提取特定字段的命令行工具。它通常用于处理结构化文本（例如 CSV 文件、日志文件等），通过指定分隔符和字段编号来提取所需的内容。
+
+基本语法:
+
+```bash
+cut [选项] 文件
+```
+
+常用选项:
+
+| 选项 | 说明 |
+| :--- | :--- |
+| `-d` | 指定字段分隔符（默认是制表符 `\t`） |
+| `-f` | 指定要提取的字段编号（从 1 开始）  |
+| `-c` | 按字符位置提取内容（例如 `-c 1-5` 提取第 1 到第 5 个字符） |
+| `--complement` | 提取除指定字段之外的所有内容 |
+
+cut 的 -f 选项支持多种字段范围语法：
+
+| 语法	| 说明	| 示例输入	| 输出|
+| :--- | :--- | :--- | :--- |
+| `-fN`	| 提取第 N 个字段	| `a b c d`	| `b` |
+| `-fN-`	| 提取从第 N 个字段开始的所有字段	| `a b c d`	| `b c d` |
+| `-fN-M`	| 提取第 N 到第 M 个字段	| `a b c d`	| `b c` |
+| `-f-M`	| 提取从第 1 个字段到第 M 个字段	| `a b c d`	| `a b c` |
+
+### 01.08
