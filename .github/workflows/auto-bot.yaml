@@ -127,7 +127,7 @@ jobs:
           git push
 
       - name: Notify server
-        if: github.event_name == 'push' && steps.git-check.outputs.readme_changed == 'true'
+        if: github.event_name == 'push'
         env:
           SERVER_URL: ${{ secrets.SERVER_URL }}
         run: |
