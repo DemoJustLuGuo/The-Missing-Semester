@@ -6,6 +6,7 @@
 
 ## 笔记证明
 
+<!-- Content_START --> 
 ### 01.06
 
 Duration of study: 1h \
@@ -149,3 +150,126 @@ find . -name '*.png' -exec convert {} {}.jpg \;
 
 Using `grep`, `ack`, `ag` and `rg` to find code.
 
+### 01.12
+
+Duration of study: 30min \
+What did I learn today: Vim Editors
+
+Vim's modal editing
+Vim has multiple operating modes:
+- Normal: moving around a file and making edits
+- Insert: inserting text
+- Replace: replacing text
+- Visual: selecting blocks of text
+- Command-line: running a command
+
+Pressing `<ESC>` to switch from any mode back to Normal. From Normal mode, you can:
+- enter Insert mode with `i`
+- enter Replace mode with `R`
+- enter Visual mode with `v`
+- enter Visual Line mode with `V`
+- enter Visual Block mode with `^V`
+- enter Command-line mode with `:`
+
+**Command-line** \
+When you enter `:` to change Command-line mode, you can type:
+>- `:q` quit (close window)
+>- `:w` save (“write”)
+>- `:wq` save and quit
+>- `:e` {name of file} open file for editing
+>- `:ls` show open buffers
+>- `:help {topic}` open help
+>   - `:help :w` opens help for the :w command
+>   - `:help w` opens help for the w movement
+
+### 01.13
+
+Duration of study: 30min \
+What did I learn today: Vim Editors
+
+**Movement**
+> - 基本移动: `hjkl` （左， 下， 上， 右）
+> - 词： `w` （下一个词）， `b` （词初）， `e` （词尾）
+> - 行： `0` （行初）， `^` （第一个非空格字符）， `$` （行尾）
+> - 屏幕： `H` （屏幕首行）， `M` （屏幕中间）， `L` （屏幕底部）
+> - 翻页： `Ctrl-u` （上翻）， `Ctrl-d` （下翻）
+> - 文件： `gg` （文件头）， `G` （文件尾）
+> - 行数： `:{行数}<CR>` 或者 `{行数}G` ({行数}为行数)
+> - 杂项： `%` （找到配对，比如括号或者 `/* */` 之类的注释对）
+> - 查找： `f{字符}`， `t{字符}`， `F{字符}`， `T{字符}`
+>   - 查找/到 向前/向后 在本行的{字符}
+>   - `,` / `;` 用于导航匹配
+> - 搜索: `/{正则表达式}`, `n` / `N` 用于导航匹配
+
+**Slection** \
+可视化模式：
+> - 可视化：v
+> - 可视化行： V
+> - 可视化块：Ctrl+v
+
+**Edits**
+> - `i` 进入插入模式
+>   - 但是对于操纵/编辑文本，不单想用退格键完成
+> - `O` / `o` 在之上/之下插入行
+> - `d{移动命令}` 删除 {移动命令}
+>   - 例如，`dw` 删除词, `d$` 删除到行尾, `d0` 删除到行头。
+> - `c{移动命令}` 改变 {移动命令}
+>   - 例如，`cw` 改变词
+>   - 比如 `d{移动命令}` 再 `i`
+> - `x` 删除字符（等同于 `dl`）
+> - `s` 替换字符（等同于 `xi`）
+> - 可视化模式 + 操作
+>   - 选中文字, `d` 删除 或者 `c` 改变
+> - `u` 撤销, `<C-r>` 重做
+> - `y` 复制 / “yank” （其他一些命令比如 `d` 也会复制）
+> - `p` 粘贴
+
+**Counts**
+> - `3w` 向后移动三个词
+> - `5j` 向下移动 5 行
+> - `7dw` 删除 7 个词
+
+简要记录了一下Vim的操作命令，初见上手是真的痛苦。后续的自定义Vim就留着以后慢慢研究吧。(´。＿。｀)
+
+### 01.15
+
+Duration of study: 1h \
+What did I learn today: Data Wrangling
+
+How to figure out who's trying to log my server?
+```bash
+ssh myserver journalctl | grep sshd
+```
+This command using a pipe to stream a remote file through `grep` on our local host.
+
+We can do the filtering on the remote computer.
+```bash
+ssh myserver 'journalctl | grep sshd | grep "Disconnected from"' > ssh.log
+```
+
+And then, We further organize the data.
+```bash
+ssh myserver journalctl
+ | grep sshd
+ | grep "Disconnected from"
+ | sed -E 's/.*Disconnected from (invalid |authenticating )?user (.*) [^ ]+ port [0-9]+( \[preauth\])?$/\2/'
+ | sort | uniq -c
+ | sort -nk1,1 | tail -n10
+ | awk '{print $2}' | paste -sd,
+```
+
+**Regular expressions** \
+Google how to use Regular expressions when you need to use it. And Using [regex debugger](https://regex101.com/) to debug.
+
+**How to use `sed`** \
+[sed | tldr InBrowser.App](https://tldr.inbrowser.app/pages.zh/linux/sed)
+
+**How to use `sort`** \
+[sort | tldr InBrowser.App](https://tldr.inbrowser.app/pages.zh/common/sort)
+
+Using `paste` to combine lines(`-s`) by a given single-character delimiter(`-d`;`,` in this case).
+
+`awk`, a programming language which is really good at processing text streams. \
+But at the same time, `awk` is complex. Browsing [awk | tldr InBrowser.App](https://tldr.inbrowser.app/pages.zh/common/awk) to get more infomation.
+
+<!-- Content_END -->

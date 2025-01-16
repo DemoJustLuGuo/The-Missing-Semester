@@ -6,6 +6,8 @@
 
 ## 笔记证明
 
+<!-- Content_START --> 
+
 ### 01.06
 
 Study Time: 3h (Allright, I spend most of my time on reading English text, it's so hard for me.)
@@ -65,7 +67,7 @@ It is good practice to write `shebang` lines using the [`env`](https://www.man7.
 > - Functions are executed in the current shell environment whereas scripts execute in their own process. Thus, functions can modify environment variables, e.g. change your current directory, whereas scripts can’t. Scripts will be passed by value environment variables that have been exported using [`export`](https://www.man7.org/linux/man-pages/man1/export.1p.html)
 > - As with any programming language, functions are a powerful construct to achieve modularity, code reuse, and clarity of shell code. Often shell scripts will include their own function definitions.
 
-### 01.12
+### 01.11
 
 Study Time: 1h.
 
@@ -149,9 +151,25 @@ while true; do
     fi
 done
 
-# 输出结果
 echo "The script ran $run_count times before failing."
 echo "Standard Output was saved to $output_file"
 echo "Standard Error was saved to $error_file"
 ```
 
+### 01.16
+
+Study Time: 2h.
+
+### Note
+
+Today I mainly experienced the use of nvim plugin in VS code.
+
+Vim is a deeply customizable editor with very powerful functions.You don't need a mouse to use Vim, you can quickly view the contents of the file using just the keyboard.But for me, I still prefer to use VS code.So I decide to use a Vim plugin for VS code.I think this will be the best way to use Vim for me.
+
+> Vim avoids the use of the mouse, because it’s too slow; Vim even avoids using the arrow keys because it requires too much movement.The end result is an editor that can match the speed at which you think.
+
+I have to admit that this is right.Using the mouse to position is waste of time, we can be faster by only use keyboard.However, in actual project development, it is obviously inappropriate to only use vVm for code editing. We still need an IDE to help us complete project development.So I think using Vim through a plugin in VS code to complete a project is a more appropriate solution.This can not only complete project development easier, but also improve our code editing efficiency and experience.
+
+
+
+<!-- Content_END -->

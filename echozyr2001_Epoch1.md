@@ -4,6 +4,7 @@
 
 ## 笔记证明
 
+<!-- Content_START --> 
 ### 01.06
 
 > 学习时间：70 min
@@ -513,3 +514,470 @@ shell 也是一种编程语言，与我们常见的脚本语言 python、lua 类
 继续 `neovim` 的配置
 
 ### 01.12
+
+> 学习时间：120 min
+
+`kill` 命令经常用，但是不知道使用 `-9` 选项有什么作用，下面是 GPT 给我的答案：
+
+>  kill 命令可以发送多种信号给进程，默认情况下，它发送 SIGTERM 信号（信号编号 15），这是请求进程正常结束的信号。以下是一些常用的信号：
+>
+> * SIGTERM (15)：请求进程正常终止，允许进程清理资源和文件等。进程可以选择忽略这个信号。
+> * SIGKILL (9)：强制立即终止进程，无法被进程捕获或忽略。通常用于终止无法正常结束的进程。
+> * SIGINT (2)：通常由用户通过按下 Ctrl + C 发送给前台进程，用于中断进程。
+> * SIGHUP (1)：通常用于通知进程重新加载配置文件，或者由于连接丢失而终止进程。
+> * SIGSTOP (19)：暂停（挂起）进程，不能被进程捕获或忽略。与 SIGCONT 相反，后者用于恢复暂停的进程。
+
+> `SIGKILL` 是一个特殊的信号，它不能被进程捕获并且它会马上结束该进程。不过这样做会有一些副作用，例如留下孤儿进程。（不知道竟然还会有这样的问题。）
+
+---
+
+`Ctrl-Z` 会暂停一个进程。
+
+`fg` 和 `bg` 命令可以恢复暂停的工作。它们分别表示在前台继续或在后台继续。
+
+`jobs` 命令会列出当前终端会话中尚未完成的全部任务。
+
+---
+
+**tmux 使用与配置**
+
+之前用过一段时间 tmux 但是觉得操作挺复杂，并且没有配置好，就没有使用了。后面还是应该用起来。
+
+tmux 快速入门教程 https://hamvocke.com/blog/a-quick-and-easy-guide-to-tmux/
+
+---
+
+**Dotfiles**
+
+> 我们应该如何管理这些配置文件呢，它们应该在它们的文件夹下，并使用版本控制系统进行管理，然后通过脚本将其 符号链接 到需要的地方。
+
+这也是我管理配置文件的方式。
+
+**配置的可移植性**
+
+之前有考虑过这个问题，但是也是觉得太复杂了就没有去弄
+
+```shell
+if [[ "$(uname)" == "Linux" ]]; then {do_something}; fi
+
+# 使用和 shell 相关的配置时先检查当前 shell 类型
+if [[ "$SHELL" == "zsh" ]]; then {do_something}; fi
+
+# 您也可以针对特定的设备进行配置
+if [[ "$(hostname)" == "myServer" ]]; then {do_something}; fi
+```
+
+---
+
+关于 ssh 密钥，通常我们使用 `ssh-copy-id` 命令来实现免密登陆，可以避免手动复制错误导致的问题。
+
+---
+
+关于上传文件到服务器中，我发现居然大部分人还不知道有 `scp` 命令。
+
+---
+
+pgrep 与 pkill，我们不用先去查进程号，可以直接通过进程名来查找与终止进程
+
+---
+
+使用 `dotfiles` 管理配置文件，我们需要手动 `ln -s` 去链接配置文件，也可以使用一些用于管理配置文件的工具：https://dotfiles.github.io/utilities/
+
+---
+
+**ssh 参数**
+
+`-N` 就是不执行远端命令，适用于端口转发的情况，`-f` 是让 ssh 在执行命令前切换到后台运行。
+
+后台进行端口转发 `ssh -fN -L 9999:localhost:8888 user@remotehost`
+
+---
+
+**一个有趣的问题**
+
+> https://unix.stackexchange.com/questions/185793/why-is-it-while-kill-0-pid-and-not-until-kill-0-pid
+
+我们需要明确的是：**在 Shell 中 ‘0’ 表示成功，非零表示失败**。
+
+在 bash 脚本中 `while` 命令不是寻找布尔值，而是寻找返回码 `0`，这表明命令执行成功。因此，在 `while` 命令的情况下，返回 `0` 的命令是**真**，其他任何值都是**假的**。
+
+```bash
+while compound-list-1
+do
+    compound-list-2
+done
+```
+
+将执行 `compound-list-1`，如果它具有非零退出状态，则 `while` 命令将完成。否则，将执行 `compound-list-2`，并重复该过程。
+
+### 01.13
+
+> 学习时间： 60 min
+
+---
+
+```
+feat	    新特性，新功能
+fix	      修bug
+docs	    更新文档
+style	    修改代码风格、代码格式（不影响代码运行的变动）
+refactor	重构代码（既不是新增功能，也不是修改bug，可以理解为觉得原本写太烂了，重新写了一遍）
+perf	    优化性能、优化体验
+test	    测试
+chore	    构建过程或者辅助工具的变动
+revert	  回滚版本
+merge	    代码合并
+sync	    同步主线或分支
+```
+
+比较好用的一个查看提交记录的命令 `git log --graph --all --decorate --oneline`
+
+---
+
+简单来讲，git 存储的是 `object` 的有向无环图（DAG），
+
+**基本结构**
+
+```text
+type blob = array<byte>
+
+type tree = map<string, tree | blob>
+
+type commit = struct {
+    parents: array<commit>
+    author: string
+    message: string
+    snapshot: tree
+}
+
+type object = blob | tree | commit
+```
+
+**寻址结构**
+
+```text
+objects = map<string, object>
+
+def store(object):
+    id = sha1(object)
+    objects[id] = object
+
+def load(id):
+    return objects[id]
+```
+
+**引用**
+
+```text
+references = map<string, string>
+
+def update_reference(name, id):
+    references[name] = id
+
+def read_reference(name):
+    return references[name]
+
+def load_reference(name_or_id):
+    if name_or_id in references:
+        return load(references[name_or_id])
+    else:
+        return load(name_or_id)
+```
+
+> 当您输入某个指令时，请思考一下这条命令是如何对底层的图数据结构进行操作的。
+
+---
+
+如何编写良好的 git commit message：https://cbea.ms/git-commit/
+
+---
+
+一个使用 Rust 实现的轻量 git 项目：https://github.com/MrBeanCpp/MIT
+
+---
+
+### 01.14
+
+> 学习时间：60 min
+
+元编程：用于操作程序的程序
+
+无论使用什么语言进行开发，我们的项目都少不了一个构建的过程，这通常涉及编译、打包、测试以及 benchmark，用来完成这些步骤的工具被称为“构建系统”。
+
+我们知道，实际开发前的环境搭建才是最折磨的，一个好的脚手架可以帮助我们解决开发前搭建环境的步骤。但不是所有语言都有这种脚手架，我最近发现了一个工具 `cookiecutter`：https://github.com/cookiecutter/cookiecutter，它为我们提供了各种项目的初始化模板。
+
+但我目前只发现了一个比较好用的 python 初始化模版：https://github.com/pyloong/cookiecutter-pythonic-project。
+
+下面是它的文档：
+
+https://pyloong.github.io/pythonic-project-guidelines/quick_start/#252
+
+https://pyloong.github.io/cookiecutter-pythonic-project/#git-per-commit
+
+关于 typescript 可以参考这里：https://simonboisset.com/blog/create-typescript-library-tsup
+
+---
+
+**语义化版本**
+
+之前一直想总结语义化版本相关的内容，借此机会将收藏夹里的文档翻出来整理。
+
+语义化版本格式为：主版本号.次版本号.修订号（`X.Y.Z`）其中 `X`、`Y` 和 `Z` 均为非负整数，
+**且禁止在数字前方补零**。
+
+版本号按以下规则递增：
+
+* 所有版本号都以 `v` 开头。
+* 主版本号：发生了与之前版本不兼容的更新时修改。
+* 次版本号：发生了向下兼容的更新时修改，这里有一个不成文的规定：偶数为稳定版，奇数为开发版。
+* 修订号：发生了向后兼容的 `bug` 修复时修改。
+
+还有这么一种版本号 `v1.2.3-alpha`，这是将先行版本号和版本编译元数据作为补充添加到了版本号中。如下图所示：
+
+![version](./images/echozyr2001/version.png)
+
+先行版本号意味着该版本不稳定，可能存在兼容性问题。编译版本号一般是编译器在编译过程中自动生成的，
+我们只定义其格式，并不人为控制。
+
+**规范**
+
+* 以标记版本的软件发布后，禁止改变其内容，任何修改都必须以新的版本发布。
+* 修订号必须在只做了向下兼容的 `bug` 修订时才递增。
+* 次版本号必须在有向下兼容的新功能出现时递增。其中可以包括修订级别的改变，每当次版本号递增时，修定号必须归零。
+* 主版本号必须在有任何不兼容的更新时递增。其中可以包括次版本以及修订级别的改变，每当主版本号递增时，次版本号和修订号必须归零。
+
+**实际开发中如何确定版本号**
+
+一般使用 `0.1.0` 作为第一个开发版本号，当软件稳定，且第一次对外发布时，版本号可以定为 `1.0.0` 每次代码的提交可以按照以下规则与版本号对应：
+
+1. `fix` 类型的提交可以将修订号 `+1`
+2. `feat` 类型的提交可以将次版本号 `+1`
+3. `BREAKING CHANGE` 的提交可以将主版本号 `+1`
+
+---
+
+`CI`：持续集成，代码提交后自动运行一系列测试，以确保新代码没有破坏现有功能。
+
+`CD`：持续交付，通过测试之后的代码自动部署到生产环境中。
+
+有一种专门的岗位叫 `DevOps` 工程师，`CI/CD` 就是他们的核心职责。
+
+---
+
+### 01.15
+
+> 学习时间：40 min
+
+密码散列函数：https://en.wikipedia.org/wiki/Cryptographic_hash_function，可以将任意大小的数据映射为一个固定大小的输出。我之前一直想实现类似的效果，原来已经有现成的实现了。
+
+**sha-1 sha-2 sha-3**
+
+SHA（安全哈希算法）目前主要有三个版本：
+
+1. **`sha-1`**
+生成固定长度的 160 位哈希值。由于算法设计的局限性，在 2005 年后发现了严重的安全缺陷。
+
+2. **`sha-2`**
+在 `sha-1` 的基础上增加了安全性和抵御攻击的能力，包含 `sha-224`、`sha-256`、`sha-384` 和 `sha-512` 多个算法变体，提供不同的输出长度。目前被广泛使用。
+
+3. **`sha-3`**
+设计上完全独立于 `sha-1` 和 `sha-2`，不受已知或潜在弱点影响。由于在当前技术条件下，`sha-3` 并没有显示出明显的效率优势，且 `sha-2` 目前仍足够安全，所以普及速度较慢。但它被广泛接受为替代 `sha-2` 的下一代哈希算法。
+
+---
+
+**为 commit 添加签名**
+
+![commit](./images/echozyr2001/commit.png)
+
+以下内容记录在我的旧笔记中，仅做分享，目前不一定适用。
+
+1. 使用 brew 安装 gpg
+   
+```shell
+brew install gpg
+```
+
+2. 生成 GPG 密钥对
+
+```shell
+gpg --full-generate-key
+```
+
+3. 在提示时，指定要生成的密钥类型，或按 `Enter` 键接受默认值。
+
+4. 在提示时，指定要生成的密钥大小，或按 `Enter` 键接受默认值。
+
+5. 输入密钥的有效时长。 按 `Enter` 键将指定默认选择，表示该密钥不会过期。 除非你需要过期日期，否则建议接受此默认值。
+
+6. 验证您的选择是否正确。
+
+7. 输入您的用户 ID 信息。
+
+> 确保输入的是电子邮件地址 经过验证的GitHub 帐户。
+
+8. 输入安全密码。
+
+9. 列出你拥有其公钥和私钥的长形式 GPG 密钥。 签名提交或标记需要私钥。
+
+```shell
+gpg --list-secret-keys --keyid-format=long
+```
+
+10. 从 GPG 密钥列表中复制您想要使用的 GPG 密钥 ID 的长形式。 在本例中，GPG 密钥 ID 为 `3AA5C34371567BD2`
+
+```shell
+$ gpg --list-secret-keys --keyid-format=long
+/Users/hubot/.gnupg/secring.gpg
+------------------------------------
+sec   4096R/3AA5C34371567BD2 2016-03-10 [expires: 2017-03-10]
+uid                          Hubot <hubot@example.com>
+ssb   4096R/4BB6D45482678BE3 2016-03-10
+```
+
+11. 粘贴下面的文本（替换为您要使用的 GPG 密钥 ID）。 在本例中，GPG 密钥 ID 为 `3AA5C34371567BD2`：
+
+```shell
+gpg --armor --export 3AA5C34371567BD2
+# Prints the GPG key ID, in ASCII armor format
+```
+
+12. 复制以 `-----BEGIN PGP PUBLIC KEY BLOCK-----` 开头并以 `-----END PGP PUBLIC KEY BLOCK-----` 结尾的 GPG 密钥。
+
+**将 GPG 密钥添加到 GitHub 帐户**
+
+1. 进入设置
+
+2. 进入“SSH 和 GPG 密钥”。
+
+3. 单击“新建 GPG 密钥”
+
+4. 在“标题”字段中键入 GPG 密钥的名称
+
+5. 在“密钥”字段中，粘贴复制的 GPG 密钥
+
+6. 单击“添加 GPG 密钥”
+
+**将您的签名密钥告知 Git**
+
+1. 如果之前已将 Git 配置为在使用 `--gpg-sign` 签名时使用不同的密钥格式，请取消设置此配置，以便使用默认 `openpgp` 格式。
+
+```shell
+git config --global --unset gpg.format
+```
+
+2. 列出你拥有其公钥和私钥的长形式 GPG 密钥。 签名提交或标记需要私钥。
+
+```shell
+gpg --list-secret-keys --keyid-format=long
+```
+
+3. 从 GPG 密钥列表中复制您想要使用的 GPG 密钥 ID 的长形式。 在本例中，GPG 密钥 ID 为 `3AA5C34371567BD2`：
+
+```shell
+$ gpg --list-secret-keys --keyid-format=long
+/Users/hubot/.gnupg/secring.gpg
+------------------------------------
+sec   4096R/3AA5C34371567BD2 2016-03-10 [expires: 2017-03-10]
+uid                          Hubot <hubot@example.com>
+ssb   4096R/4BB6D45482678BE3 2016-03-10
+```
+
+4. 若要在 Git 中设置 GPG 签名主键，请粘贴下面的文本，替换要使用的 GPG 主键 ID。 在本例中，GPG 密钥 ID 为 `3AA5C34371567BD2`：
+
+```shell
+git config --global user.signingkey 3AA5C34371567BD2
+```
+
+5. 将 Git 配置为默认对所有提交进行签名（可选）
+
+```shell
+git config --global commit.gpgsign true
+```
+
+**对提交签名**
+
+1. 当本地分支中的提交更改时，请将 S 标志添加到 git commit 命令：
+
+```shell
+$ git commit -S -m "YOUR_COMMIT_MESSAGE"
+# Creates a signed commit
+```
+
+2. 可能会遇到如下问题
+
+```shell
+gpg: signing failed: Inappropriate ioctl for device
+```
+
+解决方法如下（任选其一）：
+
+一、使用 GPG 的 TTY 模式
+* 设置 GPG 使用终端 (TTY) 来提示输入 PIN。您可以通过在 `~/.gnupg/gpg.conf` 文件中添加以下行来实现这一点：
+
+```shell
+use-agent
+pinentry-mode loopback
+```
+
+   * 然后，在 `~/.gnupg/gpg-agent.conf` 文件中添加以下行：
+
+```shell
+allow-loopback-pinentry
+```
+
+   * 之后，重启 gpg-agent：
+
+```shell
+gpg-connect-agent reloadagent /bye
+```
+
+二、使用`GPG_TTY`环境变量（未验证）
+
+* 在shell 配置文件中（如 `~/.bashrc` 或 `~/.zshrc`），添加以下行：
+
+```shell
+export GPG_TTY=$(tty)
+```
+
+* 然后，重新加载 shell 配置：
+
+```shell
+source ~/.bashrc 或 source ~/.zshrc
+```
+
+三、使用不需要PIN的GPG密钥（未验证）
+
+* 如果 GPG 密钥不需要 PIN，可以尝试生成一个不需要 PIN 的新密钥，并在 Git 中使用这个密钥进行签名。
+
+3. 在本地完成创建提交后，将其推送到 GitHub 上的远程仓库：
+
+```shell
+$ git push
+# Pushes your local commits to the remote repository
+```
+
+---
+
+**零知识证明（ZKP）**
+
+区块链本身的一个关键优势就是透明性，然而在许多情况下，一些合约处于商业或法律因素需要保障数据隐私。在区块链中采用 ZKP 技术，可以证明某条隐藏信息是有效且为证明者所拥有的。
+
+如果要用一个概念直观地解释零知识证明如何证明用户拥有数据，可以想象一个山洞只有一个入口，洞里面有两条路（路径A和路径B），这两条路由一扇门连接，要说出密码才能通过这扇门。Alice 希望向 Bob 证明她知道开门的密码，但不想将密码透露给 Bob。
+
+为了完成这个证明，Bob 需要站在山洞外，Alice 从其中一条路走进山洞，而 Bob 并不知道她选了哪条路。接着，Bob 指定 Alice 从其中一条路回到山洞入口（注：这是随机选择的）。如果 Alice 最初选择从路径 A 走到门口，但 Bob 让她从路径 B 回来，唯一的方法就是穿过那扇门，而穿过门必须知道密码。为了充分证明 Alice 真的知道门的密码，而不是运气好刚好选到了同一条路，这个过程可以反复重复好几次。
+
+这一步操作完成后，Bob 就可以非常确信 Alice 知道门的密码，与此同时 Alice 也不用向 Bob 透露密码是什么。
+
+zkSync：https://zksync.io/，通过 `zkRollup` 技术支持的以太坊二层网络扩展。
+
+Aleo：https://aleo.org/，第一条使用零知识证明技术的公链。
+
+---
+
+### 01.16
+
+> 学习时间：20 min
+
+今天大部分时间花在了开发自动 `notify` 机器人上，然后快速将之前跳过的一些内容过了一遍，比较简单且以实操为主，没有什么值得记录的东西，今天就摸了。
+
+<!-- Content_END -->
