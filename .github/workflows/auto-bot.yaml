@@ -125,3 +125,15 @@ jobs:
           git add README.md
           git commit -m "Update commit status table"
           git push
+
+      - name: Notify server
+        if: github.event_name == 'push' && steps.git-check.outputs.readme_changed == 'true'
+        env:
+          SERVER_URL: ${{ secrets.SERVER_URL }}
+        run: |
+          curl -X POST $SERVER_URL/trigger \
+          -H "Content-Type: application/json" \
+          -d '{
+            "username": "${{ github.actor }}",
+            "repository": "${{ github.repository }}"
+          }'
