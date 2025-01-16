@@ -78,4 +78,46 @@ ssh myserver 'journalctl | grep sshd | grep "Disconnected from"' | less
 
 后面其他语言太多正则表达式的内容了，只是了解，先写到这里吧，今天补了上周没学完的功课，明天再学习这周新课。
 
+### 01.16
+
+还是码点笔记
+
+**任务控制**
+
+- `Ctrl+C`:（发送` SIGINT `信号）`SIGINT `信号用于通知进程终止执行。
+- `Ctrl+\`:（发送` SIGQUIT` 信号）`SIGQUIT `信号也用于终止进程，与 `SIGINT` 不同，`SIGQUIT `信号一般不会被进程轻易忽略，如果进程没有特殊处理，会立即终止。
+- `Ctrl+Z`：(发送 `SIGTSTP`信号)`SIGTSTP`信号用于挂起前台正在运行的进程，将其放入后台作业列表中。该进程会停止执行，但不会终止，其状态被保存，以便后续可以恢复执行（按下`fg`（前台执行）/`bg`（后台执行）)。
+
+**终端多路复用**
+
+- `tmux`允许我们基于面板和标签分割出多个终端窗口，这样便可以同时与多个 shell 会话进行交互。
+
+**别名**
+
+相当于长命令的缩写，方便输入，如`alias ll = "ls - lh"`。
+
+语法如下：
+
+bash 中的别名语法如下：
+
+```bash
+alias alias_name="command_to_alias arg1 arg2"
+```
+
+**安全 shell（SSH）**
+
+可以使用 `ssh` 连接到其他服务器：
+
+```bash
+ssh foo@bar.mit.edu
+```
+
+可以通过 URL 指定（例如 `bar.mit.edu`）
+
+可以使用 IP 指定（例如 `foobar@192.168.1.42`）
+
+可以直接远程执行命令，例如 `ssh foobar@server ls | grep PATTERN`
+
+今天先这样吧，ssh好像有点好玩的样子，可以尝试玩一下路由器。
+
 <!-- Content_END -->
